@@ -96,9 +96,14 @@ export default function TestMode() {
       if (document.hidden && !loading && questions.length > 0 && !submitting) {
         setIsPaused(true);
         setPauseReason('switch');
-        // Reshuffle immediately
-        setQuestions(prev => shuffleArray(prev));
-        // Reset index to add to the "penalty/confusion" effect
+        
+        // Filter out already attempted questions and reshuffle the rest
+        setQuestions(prev => {
+          const unattempted = prev.filter(q => !answers[q.id]);
+          // If no unattempted left, we don't filter (fallback) or we could auto-submit
+          return shuffleArray(unattempted.length > 0 ? unattempted : prev);
+        });
+        
         setCurrentIndex(0);
       }
     };
@@ -166,9 +171,17 @@ export default function TestMode() {
   };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    
+    const parts = [
+      hrs > 0 ? hrs.toString().padStart(2, '0') : null,
+      mins.toString().padStart(2, '0'),
+      secs.toString().padStart(2, '0')
+    ].filter(Boolean);
+
+    return parts.join(':');
   };
 
   if (loading) {
@@ -287,11 +300,11 @@ export default function TestMode() {
           </div>
 
           {currentQuestion.imageUrl && (
-            <div className="mb-8 md:mb-12 rounded-2xl overflow-hidden border border-slate-100 bg-white p-2">
+            <div className="mb-8 md:mb-12 rounded-3xl overflow-hidden border-4 border-slate-50 bg-white p-4 shadow-sm">
               <img 
                 src={getDriveDirectLink(currentQuestion.imageUrl)} 
-                alt="Question Image" 
-                className="max-h-[200px] md:max-h-[300px] w-auto mx-auto object-contain rounded-xl"
+                alt="Question Content" 
+                className="max-h-[400px] w-auto mx-auto object-contain rounded-2xl"
                 referrerPolicy="no-referrer"
               />
             </div>

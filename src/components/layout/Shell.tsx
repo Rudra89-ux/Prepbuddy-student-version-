@@ -47,7 +47,7 @@ export default function Shell({ children }: ShellProps) {
   const navItems = [
     { name: 'Mock Tests', icon: GraduationCap, path: '/tests' },
     { name: 'AI Solutions', icon: MessageSquareQuote, path: '/solutions' },
-    { name: 'Subjects', icon: BookOpen, path: '/subjects' },
+    { name: 'Profile', icon: UserIcon, path: '/profile' },
   ];
 
   const adminItems = [
@@ -57,6 +57,28 @@ export default function Shell({ children }: ShellProps) {
    const isAdmin = profile?.role === 'admin' || 
                   auth.currentUser?.email === 'rudrapable2010@gmail.com' || 
                   auth.currentUser?.email === 'leaninkclothing@gmail.com';
+
+  const isTestPage = location.pathname === '/test';
+
+  if (isTestPage) {
+    return (
+      <div className="min-h-screen bg-slate-50 overflow-hidden font-sans">
+        <main className="w-full h-full overflow-y-auto p-4 md:p-12 relative bg-[#F8F9FA]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden flex-col md:flex-row">

@@ -17,7 +17,8 @@ import {
   Edit2,
   ListRestart
 } from 'lucide-react';
-import { Subject, Question, MockTest } from '../../types';
+import { MockTest, Question, Subject } from '../../types';
+import { getDriveDirectLink } from '../../lib/utils';
 import { LatexRenderer } from '../../components/LatexRenderer';
 
 export default function MockTestManager() {
@@ -291,19 +292,24 @@ export default function MockTestManager() {
                   <motion.div
                     layout
                     key={`selected-${q.id}`}
-                    className="p-6 bg-slate-50 border border-slate-200 rounded-xl transition-all flex items-start justify-between group"
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-xl transition-all flex items-center justify-between group"
                   >
-                     <div className="flex-1">
-                        <div className="text-[11px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-1">
-                           <LatexRenderer text={q.questionText} />
+                    <div className="flex items-center gap-4 flex-1">
+                      {q.imageUrl && (
+                        <div className="shrink-0 w-8 h-8 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                           <img src={getDriveDirectLink(q.imageUrl)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         </div>
+                      )}
+                      <div className="text-[10px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-1">
+                         <LatexRenderer text={q.questionText} />
                       </div>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); toggleQuestion(q.id, false); }}
-                        className="text-slate-300 hover:text-red-500 transition-colors ml-4"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleQuestion(q.id, false); }}
+                      className="text-slate-300 hover:text-red-500 transition-colors ml-4"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </motion.div>
                 ))}
               </div>
@@ -342,23 +348,23 @@ export default function MockTestManager() {
                       layout
                       key={q.id}
                       onClick={() => toggleQuestion(q.id)}
-                      className="p-6 bg-white border border-slate-100 rounded-xl transition-all cursor-pointer group shadow-sm hover:border-black active:scale-[0.99]"
+                      className="p-4 bg-white border border-slate-100 rounded-xl transition-all cursor-pointer group shadow-sm hover:border-black active:scale-[0.99]"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1 shrink-0 w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center transition-all group-hover:border-black">
+                      <div className="flex items-center gap-4">
+                        <div className="shrink-0 w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center transition-all group-hover:border-black">
                           <Plus size={12} className="text-slate-200 group-hover:text-black" />
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <span className="text-[8px] font-black uppercase py-1 px-2 bg-slate-50 border border-slate-100 text-slate-400 rounded">
-                              {q.type}
-                            </span>
+                        {q.imageUrl && (
+                          <div className="shrink-0 w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden">
+                             <img src={getDriveDirectLink(q.imageUrl)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                           </div>
-                          <div className="text-[11px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-2">
+                        )}
+                        <div className="flex-1">
+                          <div className="text-[10px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-1">
                              <LatexRenderer text={q.questionText} />
                           </div>
                         </div>
-                        <ChevronRight size={16} className="text-slate-200 mt-1 transition-transform group-hover:translate-x-1" />
+                        <ChevronRight size={14} className="text-slate-200 transition-transform group-hover:translate-x-1" />
                       </div>
                     </motion.div>
                   );

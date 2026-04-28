@@ -7,12 +7,20 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getDriveDirectLink = (url: string) => {
   if (!url) return '';
-  const regExp = /(?:https?:\/\/)?(?:drive\.google\.com\/(?:file\/d\/|open\?id=)|(?:docs\.google\.com\/file\/d\/))([a-zA-Z0-9_-]+)/;
+  // Enhanced regex to capture IDs from various Drive link formats (file/d/, open?id=, uc?id=, sharing, etc)
+  const regExp = /(?:https?:\/\/)?(?:drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=|sharing)|(?:docs\.google\.com\/file\/d\/))([a-zA-Z0-9_-]{25,})/;
   const match = url.match(regExp);
+  
   if (match && match[1]) {
-    // Using the alternative format that often works better for direct images
-    return `https://docs.google.com/uc?export=view&id=${match[1]}`;
+    // This endpoint is generally the most reliable for direct image display in cross-origin environments
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
   }
+  
+  // If no match found by regex, it might be a direct ID already
+  if (url.length >= 25 && !url.includes('/') && !url.includes('.')) {
+    return `https://drive.google.com/thumbnail?id=${url}&sz=w1000`;
+  }
+  
   return url;
 };
 

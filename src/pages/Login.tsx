@@ -51,11 +51,6 @@ export default function Login() {
     }
   };
 
-  const loginAsAdmin = () => {
-    setEmail('rudrapable2010@gmail.com');
-    setIsLogin(true);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-6 md:p-12">
       <motion.div 
@@ -133,15 +128,6 @@ export default function Login() {
               {isLogin ? 'Register account' : 'Sign in here'}
             </button>
           </p>
-          
-          <div className="pt-8 border-t border-slate-100">
-            <button 
-              onClick={loginAsAdmin}
-              className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:text-black transition-colors"
-            >
-              System Admin Login
-            </button>
-          </div>
         </div>
       </motion.div>
     </div>

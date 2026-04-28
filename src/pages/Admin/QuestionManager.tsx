@@ -439,7 +439,7 @@ export default function QuestionManager() {
                       <img 
                         src={getDriveDirectLink(manualQuestion.imageUrl)} 
                         alt="Preview" 
-                        className="max-h-32 mx-auto rounded shadow-sm"
+                        className="max-h-64 mx-auto rounded shadow-lg border border-slate-100"
                         referrerPolicy="no-referrer"
                         onError={(e) => (e.currentTarget.style.display = 'none')}
                       />
@@ -604,6 +604,16 @@ export default function QuestionManager() {
                       <div className="font-black text-black uppercase tracking-tight text-sm mb-4 leading-relaxed">
                         <LatexRenderer text={q.questionText} />
                       </div>
+                      {q.imageUrl && (
+                        <div className="mb-4 rounded-xl overflow-hidden border border-slate-100 bg-white p-2">
+                          <img 
+                            src={getDriveDirectLink(q.imageUrl)} 
+                            alt="Question Content" 
+                            className="max-h-64 mx-auto object-contain rounded"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      )}
                       <div className="p-4 bg-white border border-slate-100 rounded-xl text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         <span className="text-black mr-2">Explanation:</span> {q.explanation}
                       </div>

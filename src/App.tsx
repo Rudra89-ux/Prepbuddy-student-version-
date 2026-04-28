@@ -12,6 +12,7 @@ import Chapters from './pages/Chapters';
 import TestMode from './pages/TestMode';
 import Results from './pages/Results';
 import AIDoubtSolver from './pages/AIDoubtSolver';
+import Profile from './pages/Profile';
 import Login from './pages/Login';
 import AdminHub from './pages/Admin/AdminHub';
 import QuestionManager from './pages/Admin/QuestionManager';
@@ -69,9 +70,8 @@ export default function App() {
         <Route path="/" element={<Navigate to="/tests" replace />} />
         <Route path="/tests" element={<ProtectedRoute><Tests /></ProtectedRoute>} />
         <Route path="/solutions" element={<ProtectedRoute><AIDoubtSolver /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         
-        <Route path="/subjects" element={<ProtectedRoute><Subjects /></ProtectedRoute>} />
-        <Route path="/chapters" element={<ProtectedRoute><Chapters /></ProtectedRoute>} />
         <Route path="/test" element={<ProtectedRoute><TestMode /></ProtectedRoute>} />
         <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
         
