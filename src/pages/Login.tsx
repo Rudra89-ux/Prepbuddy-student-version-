@@ -37,7 +37,7 @@ export default function Login() {
         await setDoc(doc(db, 'user_profiles', user.uid), {
           uid: user.uid,
           email: user.email,
-          displayName: displayName || (email === 'rudrapable2010@gmail.com' ? 'Rudrapable' : 'Rutuja'),
+          displayName: displayName || 'Student',
           role: role,
           createdAt: serverTimestamp(),
         });

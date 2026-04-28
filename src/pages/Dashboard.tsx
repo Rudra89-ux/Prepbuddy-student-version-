@@ -51,8 +51,9 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const avgAccuracy = results.length > 0 
-    ? Math.round(results.reduce((acc, r) => acc + r.accuracy, 0) / results.length)
+  const validResults = results.filter(r => !isNaN(r.accuracy));
+  const avgAccuracy = validResults.length > 0 
+    ? Math.round(validResults.reduce((acc, r) => acc + r.accuracy, 0) / validResults.length)
     : 0;
 
   const data = [

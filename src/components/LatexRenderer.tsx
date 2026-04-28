@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -6,7 +6,7 @@ interface LatexRendererProps {
   text: string;
 }
 
-export const LatexRenderer: React.FC<LatexRendererProps> = ({ text }) => {
+export const LatexRenderer: React.FC<LatexRendererProps> = memo(({ text }) => {
   if (!text) return null;
 
   // Split text by $$ (block math) and $ (inline math)
@@ -27,4 +27,6 @@ export const LatexRenderer: React.FC<LatexRendererProps> = ({ text }) => {
       })}
     </span>
   );
-};
+});
+
+LatexRenderer.displayName = 'LatexRenderer';

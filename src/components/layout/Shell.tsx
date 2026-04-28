@@ -27,16 +27,18 @@ export default function Shell({ children }: ShellProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (auth.currentUser) {
-        const docRef = doc(db, 'user_profiles', auth.currentUser.uid);
+    const unsub = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const docRef = doc(db, 'user_profiles', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setProfile(docSnap.data() as UserProfile);
         }
+      } else {
+        setProfile(null);
       }
-    };
-    fetchProfile();
+    });
+    return () => unsub();
   }, []);
 
   const handleLogout = async () => {
@@ -145,6 +147,11 @@ export default function Shell({ children }: ShellProps) {
 
         <div className="p-6 mt-auto">
           <div className={`flex flex-col gap-2 ${!isSidebarOpen && 'items-center'}`}>
+            <div className="mb-4 px-3">
+               <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">
+                 Designed and developed by <span className="text-black">Rudra P</span>
+               </p>
+            </div>
             <Link
               to="/settings"
               className={`flex items-center gap-3 p-3 rounded-lg font-semibold text-slate-400 hover:text-black hover:bg-slate-50 transition-all ${
@@ -190,6 +197,12 @@ export default function Shell({ children }: ShellProps) {
             <span className="text-[10px] uppercase font-bold tracking-tighter">Admin</span>
           </Link>
         )}
+      </div>
+
+      <div className="md:hidden fixed bottom-16 left-0 right-0 py-2 bg-white/80 backdrop-blur-sm border-t border-slate-50 flex justify-center z-40">
+         <p className="text-[7px] font-black text-slate-300 uppercase tracking-widest">
+           Developed by <span className="text-black">Rudra P</span>
+         </p>
       </div>
 
       {/* Main Content */}

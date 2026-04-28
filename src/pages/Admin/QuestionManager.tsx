@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, where, orderBy, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { generateQuestions } from '../../lib/gemini';
@@ -18,6 +18,185 @@ import {
 import { Subject, Chapter, Question } from '../../types';
 import { LatexRenderer } from '../../components/LatexRenderer';
 import { getDriveDirectLink } from '../../lib/utils';
+
+interface ManualQuestionFormProps {
+  manualQuestion: Partial<Question>;
+  setManualQuestion: React.Dispatch<React.SetStateAction<Partial<Question>>>;
+  onSubmit: (e: React.FormEvent, directSave?: boolean) => Promise<void>;
+  onCancel: () => void;
+  loading: boolean;
+  editingIndex: number | null;
+}
+
+const ManualQuestionForm = memo(({ 
+  manualQuestion, 
+  setManualQuestion, 
+  onSubmit, 
+  onCancel, 
+  loading,
+  editingIndex
+}: ManualQuestionFormProps) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-white p-10 rounded-big border border-black shadow-2xl mb-12"
+    >
+      <div className="flex justify-between items-center mb-10">
+        <h3 className="text-xs font-black text-black uppercase tracking-[0.25em]">
+          {manualQuestion.id ? 'Edit Question' : (editingIndex !== null ? 'Edit Question from List' : 'Add Question')}
+        </h3>
+        {(editingIndex !== null || manualQuestion.id) && (
+          <button 
+            onClick={onCancel}
+            className="text-[9px] font-black text-slate-300 uppercase tracking-widest hover:text-black transition-colors"
+          >
+            Cancel Edit
+          </button>
+        )}
+      </div>
+      <form onSubmit={(e) => onSubmit(e)} className="space-y-6">
+        <div>
+          <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Image URL (Google Drive)</label>
+          <input
+            type="url"
+            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+            placeholder="Link to question image..."
+            value={manualQuestion.imageUrl}
+            onChange={(e) => setManualQuestion(prev => ({ ...prev, imageUrl: e.target.value }))}
+          />
+          {manualQuestion.imageUrl && (
+            <div className="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-lg text-center">
+              <p className="text-[8px] font-black text-slate-300 uppercase mb-2">Preview</p>
+              <img 
+                src={getDriveDirectLink(manualQuestion.imageUrl)} 
+                alt="Preview" 
+                className="max-h-64 mx-auto rounded shadow-lg border border-slate-100"
+                referrerPolicy="no-referrer"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Question (Use $...$ for Math)</label>
+          <textarea
+            className="w-full p-5 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase min-h-[120px]"
+            placeholder="Type your question..."
+            value={manualQuestion.questionText}
+            onChange={(e) => setManualQuestion(prev => ({ ...prev, questionText: e.target.value }))}
+            required
+          />
+        </div>
+
+        {manualQuestion.type === 'mcq' && (
+          <div className="space-y-4">
+            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block">Options</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {manualQuestion.options?.map((opt, i) => (
+                <div key={i} className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px]">{String.fromCharCode(65 + i)}</span>
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+                    value={opt}
+                    onChange={(e) => {
+                      const newOpts = [...(manualQuestion.options || [])];
+                      newOpts[i] = e.target.value;
+                      setManualQuestion(prev => ({ ...prev, options: newOpts }));
+                    }}
+                    required={manualQuestion.type === 'mcq'}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Correct Answer</label>
+            <select
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+              value={manualQuestion.correctAnswer}
+              onChange={(e) => setManualQuestion(prev => ({ ...prev, correctAnswer: e.target.value }))}
+              required
+            >
+              <option value="">Select Option</option>
+              {manualQuestion.options?.map((opt, i) => (
+                <option key={i} value={opt}>{String.fromCharCode(65 + i)}: {opt.slice(0, 30)}...</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Explanation</label>
+            <input
+              type="text"
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+              placeholder="Explain the answer..."
+              value={manualQuestion.explanation}
+              onChange={(e) => setManualQuestion(prev => ({ ...prev, explanation: e.target.value }))}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="p-8 bg-slate-50 border border-slate-100 rounded-lg">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">Preview</p>
+          <div className="space-y-6">
+            {manualQuestion.imageUrl && (
+              <div className="rounded-lg overflow-hidden border border-slate-200 bg-white p-2">
+                <img 
+                  src={getDriveDirectLink(manualQuestion.imageUrl)} 
+                  alt="Asset Preview" 
+                  className="max-h-32 mx-auto object-contain rounded"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
+            <div className="font-black text-black uppercase tracking-tight text-sm leading-relaxed">
+              <LatexRenderer text={manualQuestion.questionText || 'Your question will appear here...'} />
+            </div>
+            {manualQuestion.type === 'mcq' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {manualQuestion.options?.map((opt, i) => (
+                   <div key={i} className="p-3 bg-white border border-slate-100 rounded text-[9px] font-black uppercase tracking-wide flex items-center gap-3">
+                     <span className="text-slate-300">{String.fromCharCode(65 + i)}</span>
+                     <LatexRenderer text={opt || '...'} />
+                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-6 flex flex-col md:flex-row gap-4">
+          {!manualQuestion.id && (
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-5 bg-white border border-black text-black hover:bg-slate-50 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-sm disabled:opacity-50"
+            >
+              Add to List
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={loading}
+            onClick={(e) => onSubmit(e as any, true)}
+            className="flex-1 py-5 bg-black text-white hover:bg-slate-800 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Save size={16} />}
+            {manualQuestion.id ? 'Save Updates' : 'Save Immediately'}
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+});
+
+ManualQuestionForm.displayName = 'ManualQuestionForm';
 
 export default function QuestionManager() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -390,173 +569,25 @@ export default function QuestionManager() {
           )}
 
           {showManualForm && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white p-10 rounded-big border border-black shadow-2xl mb-12"
-            >
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="text-xs font-black text-black uppercase tracking-[0.25em]">
-                  {manualQuestion.id ? 'Edit Question' : (editingIndex !== null ? 'Edit Question from List' : 'Add Question')}
-                </h3>
-                {(editingIndex !== null || manualQuestion.id) && (
-                  <button 
-                    onClick={() => {
-                      setShowManualForm(false);
-                      setEditingIndex(null);
-                      setManualQuestion({
-                        type: 'mcq',
-                        questionText: '',
-                        options: ['', '', '', ''],
-                        correctAnswer: '',
-                        explanation: '',
-                        imageUrl: ''
-                      });
-                    }}
-                    className="text-[9px] font-black text-slate-300 uppercase tracking-widest hover:text-black transition-colors"
-                  >
-                    Cancel Edit
-                  </button>
-                )}
-              </div>
-              <form onSubmit={(e) => handleManualSubmit(e)} className="space-y-6">
-                <div>
-                  <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Image URL (Google Drive)</label>
-                  <input
-                    type="url"
-                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                    placeholder="Link to question image..."
-                    value={manualQuestion.imageUrl}
-                    onChange={(e) => setManualQuestion({ ...manualQuestion, imageUrl: e.target.value })}
-                  />
-                  {manualQuestion.imageUrl && (
-                    <div className="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-lg text-center">
-                      <p className="text-[8px] font-black text-slate-300 uppercase mb-2">Preview</p>
-                      <img 
-                        src={getDriveDirectLink(manualQuestion.imageUrl)} 
-                        alt="Preview" 
-                        className="max-h-64 mx-auto rounded shadow-lg border border-slate-100"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Question (Use $...$ for Math)</label>
-                  <textarea
-                    className="w-full p-5 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase min-h-[120px]"
-                    placeholder="Type your question..."
-                    value={manualQuestion.questionText}
-                    onChange={(e) => setManualQuestion({ ...manualQuestion, questionText: e.target.value })}
-                    required
-                  />
-                </div>
-
-                {manualQuestion.type === 'mcq' && (
-                  <div className="space-y-4">
-                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block">Options</label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {manualQuestion.options?.map((opt, i) => (
-                        <div key={i} className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px]">{String.fromCharCode(65 + i)}</span>
-                          <input
-                            type="text"
-                            className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                            value={opt}
-                            onChange={(e) => {
-                              const newOpts = [...(manualQuestion.options || [])];
-                              newOpts[i] = e.target.value;
-                              setManualQuestion({ ...manualQuestion, options: newOpts });
-                            }}
-                            required={manualQuestion.type === 'mcq'}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Correct Answer</label>
-                    <select
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                      value={manualQuestion.correctAnswer}
-                      onChange={(e) => setManualQuestion({ ...manualQuestion, correctAnswer: e.target.value })}
-                      required
-                    >
-                      <option value="">Select Option</option>
-                      {manualQuestion.options?.map((opt, i) => (
-                        <option key={i} value={opt}>{String.fromCharCode(65 + i)}: {opt.slice(0, 30)}...</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Explanation</label>
-                    <input
-                      type="text"
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                      placeholder="Explain the answer..."
-                      value={manualQuestion.explanation}
-                      onChange={(e) => setManualQuestion({ ...manualQuestion, explanation: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="p-8 bg-slate-50 border border-slate-100 rounded-lg">
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">Preview</p>
-                  <div className="space-y-6">
-                    {manualQuestion.imageUrl && (
-                      <div className="rounded-lg overflow-hidden border border-slate-200 bg-white p-2">
-                        <img 
-                          src={getDriveDirectLink(manualQuestion.imageUrl)} 
-                          alt="Asset Preview" 
-                          className="max-h-32 mx-auto object-contain rounded"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    )}
-                    <div className="font-black text-black uppercase tracking-tight text-sm leading-relaxed">
-                      <LatexRenderer text={manualQuestion.questionText || 'Your question will appear here...'} />
-                    </div>
-                    {manualQuestion.type === 'mcq' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {manualQuestion.options?.map((opt, i) => (
-                           <div key={i} className="p-3 bg-white border border-slate-100 rounded text-[9px] font-black uppercase tracking-wide flex items-center gap-3">
-                             <span className="text-slate-300">{String.fromCharCode(65 + i)}</span>
-                             <LatexRenderer text={opt || '...'} />
-                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-6 flex flex-col md:flex-row gap-4">
-                  {!manualQuestion.id && (
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 py-5 bg-white border border-black text-black hover:bg-slate-50 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-sm disabled:opacity-50"
-                    >
-                      Add to List
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={(e) => handleManualSubmit(e as any, true)}
-                    className="flex-1 py-5 bg-black text-white hover:bg-slate-800 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Save size={16} />}
-                    {manualQuestion.id ? 'Save Updates' : 'Save Immediately'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+            <ManualQuestionForm 
+              manualQuestion={manualQuestion}
+              setManualQuestion={setManualQuestion}
+              onSubmit={handleManualSubmit}
+              loading={loading}
+              editingIndex={editingIndex}
+              onCancel={() => {
+                setShowManualForm(false);
+                setEditingIndex(null);
+                setManualQuestion({
+                  type: 'mcq',
+                  questionText: '',
+                  options: ['', '', '', ''],
+                  correctAnswer: '',
+                  explanation: '',
+                  imageUrl: ''
+                });
+              }}
+            />
           )}
 
           {showExisting && (

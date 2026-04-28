@@ -79,7 +79,7 @@ export default function Chapters() {
           </div>
           <div className="w-[1px] h-10 bg-slate-100 mx-4 hidden sm:block" />
           <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center font-black text-xs">
-            {Math.round((0 / chapters.length || 0) * 100)}%
+            {chapters.length > 0 ? Math.round((0 / chapters.length) * 100) : 0}%
           </div>
         </div>
       </div>

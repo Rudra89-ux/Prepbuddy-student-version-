@@ -45,13 +45,15 @@ export default function Progress() {
     fetchResults();
   }, []);
 
-  const chartData = results.map(r => ({
+  const validResults = results.filter(r => r && typeof r.accuracy === 'number' && !isNaN(r.accuracy));
+
+  const chartData = validResults.map(r => ({
     date: new Date(r.timestamp?.toDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     accuracy: r.accuracy
   }));
 
-  const bestScore = results.length > 0 ? Math.max(...results.map(r => r.accuracy)) : 0;
-  const recentScore = results.length > 0 ? results[results.length - 1].accuracy : 0;
+  const bestScore = validResults.length > 0 ? Math.max(...validResults.map(r => r.accuracy)) : 0;
+  const recentScore = validResults.length > 0 ? validResults[validResults.length - 1].accuracy : 0;
 
   return (
     <div className="space-y-8">

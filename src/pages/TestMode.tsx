@@ -161,7 +161,7 @@ export default function TestMode() {
       }
     });
 
-    const accuracy = Math.round((correctCount / questions.length) * 100);
+    const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
 
     const userAnswers = questions.map(q => ({
       questionId: q.id,

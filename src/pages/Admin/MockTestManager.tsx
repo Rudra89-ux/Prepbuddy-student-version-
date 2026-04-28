@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, where, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
@@ -21,6 +21,35 @@ import { MockTest, Question, Subject } from '../../types';
 import { getDriveDirectLink } from '../../lib/utils';
 import { LatexRenderer } from '../../components/LatexRenderer';
 
+const QuestionRow = memo(({ q, onClick, isSelected }: { q: Question, onClick: () => void, isSelected?: boolean }) => {
+  return (
+    <motion.div
+      layout
+      onClick={onClick}
+      className={`p-4 bg-white border border-slate-100 rounded-xl transition-all cursor-pointer group shadow-sm hover:border-black active:scale-[0.99] ${isSelected ? 'border-emerald-500 bg-emerald-50/10' : ''}`}
+    >
+      <div className="flex items-center gap-4">
+        <div className="shrink-0 w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center transition-all group-hover:border-black">
+          {isSelected ? <CheckCircle2 size={12} className="text-emerald-500" /> : <Plus size={12} className="text-slate-200 group-hover:text-black" />}
+        </div>
+        {q.imageUrl && (
+          <div className="shrink-0 w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden">
+             <img src={getDriveDirectLink(q.imageUrl)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+        )}
+        <div className="flex-1">
+          <div className="text-[10px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-1">
+             <LatexRenderer text={q.questionText} />
+          </div>
+        </div>
+        <ChevronRight size={14} className="text-slate-200 transition-transform group-hover:translate-x-1" />
+      </div>
+    </motion.div>
+  );
+});
+
+QuestionRow.displayName = 'QuestionRow';
+
 export default function MockTestManager() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -38,6 +67,17 @@ export default function MockTestManager() {
   const [fetchingQuestions, setFetchingQuestions] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredQuestions = useMemo(() => {
+    return questions.filter(q => 
+      q.questionText.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !selectedQuestionIds.includes(q.id)
+    );
+  }, [questions, searchTerm, selectedQuestionIds]);
+
+  const selectedQuestionsDisplay = useMemo(() => {
+    return questions.filter(q => selectedQuestionIds.includes(q.id));
+  }, [questions, selectedQuestionIds]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -156,13 +196,6 @@ export default function MockTestManager() {
     }
   };
 
-  const filteredQuestions = questions.filter(q => 
-    q.questionText.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !selectedQuestionIds.includes(q.id) // Hide if already selected, as per user request
-  );
-
-  const selectedQuestionsDisplay = questions.filter(q => selectedQuestionIds.includes(q.id));
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center bg-black p-12 rounded-big text-white overflow-hidden relative shadow-2xl">
@@ -244,8 +277,11 @@ export default function MockTestManager() {
                   <input
                     type="number"
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    value={isNaN(duration) ? '' : duration}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setDuration(isNaN(val) ? 0 : val);
+                    }}
                     required
                   />
                 </div>
@@ -342,33 +378,13 @@ export default function MockTestManager() {
               {fetchingQuestions ? (
                 <div className="py-20 text-center font-black text-[10px] text-slate-300 uppercase tracking-[0.2em] animate-pulse">Loading question pool...</div>
               ) : filteredQuestions.length > 0 ? (
-                filteredQuestions.map(q => {
-                  return (
-                    <motion.div
-                      layout
-                      key={q.id}
-                      onClick={() => toggleQuestion(q.id)}
-                      className="p-4 bg-white border border-slate-100 rounded-xl transition-all cursor-pointer group shadow-sm hover:border-black active:scale-[0.99]"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="shrink-0 w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center transition-all group-hover:border-black">
-                          <Plus size={12} className="text-slate-200 group-hover:text-black" />
-                        </div>
-                        {q.imageUrl && (
-                          <div className="shrink-0 w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden">
-                             <img src={getDriveDirectLink(q.imageUrl)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <div className="text-[10px] font-bold text-black leading-relaxed uppercase tracking-tight line-clamp-1">
-                             <LatexRenderer text={q.questionText} />
-                          </div>
-                        </div>
-                        <ChevronRight size={14} className="text-slate-200 transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </motion.div>
-                  );
-                })
+                filteredQuestions.map(q => (
+                    <QuestionRow 
+                      key={q.id} 
+                      q={q} 
+                      onClick={() => toggleQuestion(q.id)} 
+                    />
+                ))
               ) : selectedSubject ? (
                 <div className="py-20 bg-slate-50 rounded-big border border-dashed border-slate-100 text-center">
                   <AlertCircle className="mx-auto mb-4 text-slate-200" size={32} />

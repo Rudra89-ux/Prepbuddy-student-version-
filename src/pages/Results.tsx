@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { doc, getDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -148,71 +148,70 @@ export default function Results() {
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
-          <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
-             <Target size={14} />
-             Growth Identification
-          </h3>
-          <div className="space-y-6">
-            <div className="space-y-3">
-              {Object.entries(chapterBreakdown).map(([chapterId, data], i) => {
-                const chapterData = data as { correct: number, total: number };
-                const acc = Math.round((chapterData.correct / chapterData.total) * 100);
-                return (
-                  <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                    <span className="text-[10px] font-black text-black uppercase tracking-widest truncate max-w-[150px]">
-                      {chapterId === 'none' ? 'General' : chapterId}
-                    </span>
-                    <div className="flex items-center gap-4">
-                      <div className="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${acc >= 75 ? 'bg-emerald-500' : acc >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} 
-                          style={{ width: `${acc}%` }}
-                        />
+        {/* Only show these to admins to keep student view simple as requested */}
+        {(auth.currentUser?.email === 'rudrapable2010@gmail.com' || auth.currentUser?.email === 'leaninkclothing@gmail.com') ? (
+          <>
+            <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
+              <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
+                 <Target size={14} />
+                 Growth Identification
+              </h3>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  {Object.entries(chapterBreakdown).map(([chapterId, data], i) => {
+                    const chapterData = data as { correct: number, total: number };
+                    const acc = chapterData.total > 0 ? Math.round((chapterData.correct / chapterData.total) * 100) : 0;
+                    const safeAcc = isNaN(acc) ? 0 : acc;
+                    return (
+                      <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                        <span className="text-[10px] font-black text-black uppercase tracking-widest truncate max-w-[150px]">
+                          {chapterId === 'none' ? 'General' : chapterId}
+                        </span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${safeAcc >= 75 ? 'bg-emerald-500' : safeAcc >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                              style={{ width: `${safeAcc}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-black text-black">{safeAcc}%</span>
+                        </div>
                       </div>
-                      <span className="text-[10px] font-black text-black">{acc}%</span>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {result.accuracy < 80 ? (
-              <div className="p-6 bg-red-50 border border-red-100 rounded-2xl">
-                <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-2">Weakness Detected</p>
-                <p className="text-[11px] font-bold text-red-900 uppercase leading-relaxed">
-                  Precision delta exceeds 20%. Multiple conceptual gaps identified in current session. 
-                  Focused review of {result.subjectName || 'Current Subject'} required for board alignment.
-                </p>
+            <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
+              <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
+                <Layers size={14} />
+                Analytical Breakdown
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Correct</p>
+                  <p className="text-xl font-black text-emerald-500">{result.score}</p>
+                </div>
+                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Incorrect</p>
+                  <p className="text-xl font-black text-red-500">{result.wrongAnswers}</p>
+                </div>
               </div>
-            ) : (
-              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Efficiency Confirmed</p>
-                <p className="text-[11px] font-bold text-emerald-900 uppercase leading-relaxed">
-                  Conceptual alignment verified. Performance metrics within 90th percentile threshold. 
-                  Continue strategic progression.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
-          <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
-            <Layers size={14} />
-            Analytical Breakdown
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
-              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Correct</p>
-              <p className="text-xl font-black text-emerald-500">{result.score}</p>
             </div>
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
-              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Incorrect</p>
-              <p className="text-xl font-black text-red-500">{result.wrongAnswers}</p>
+          </>
+        ) : (
+          <div className="col-span-full">
+            <div className={`p-10 rounded-big border text-center ${isPassed ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+               <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${isPassed ? 'text-emerald-600' : 'text-red-600'}`}>
+                 {isPassed ? 'Academic Standing: Valid' : 'Academic Standing: Review Required'}
+               </p>
+               <p className={`text-xl font-black uppercase ${isPassed ? 'text-emerald-900' : 'text-red-900'}`}>
+                 {isPassed ? 'Excellent precision maintained.' : 'Additional practice cycles recommended.'}
+               </p>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <AnimatePresence>
