@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
   BookOpen, 
   GraduationCap, 
-  BarChart3, 
   Settings, 
   LogOut,
   Menu,
   X,
   User as UserIcon,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquareQuote
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db } from '../../lib/firebase';
@@ -46,9 +45,9 @@ export default function Shell({ children }: ShellProps) {
   };
 
   const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { name: 'Mock Tests', icon: GraduationCap, path: '/tests' },
-    { name: 'Progress', icon: BarChart3, path: '/progress' },
+    { name: 'AI Solutions', icon: MessageSquareQuote, path: '/solutions' },
+    { name: 'Subjects', icon: BookOpen, path: '/subjects' },
   ];
 
   const adminItems = [

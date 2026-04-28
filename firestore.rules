@@ -92,19 +92,22 @@ service cloud.firestore {
     // Rules for Subjects (Public Read, Admin Write)
     match /subjects/{subjectId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin() && isValidSubject(incoming());
+      allow create, update: if isAdmin() && isValidSubject(incoming());
+      allow delete: if isAdmin();
     }
 
     // Rules for Chapters (Public Read, Admin Write)
     match /chapters/{chapterId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin() && isValidChapter(incoming());
+      allow create, update: if isAdmin() && isValidChapter(incoming());
+      allow delete: if isAdmin();
     }
 
     // Rules for Questions (Public Read, Admin Write)
     match /questions/{questionId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin() && isValidQuestion(incoming());
+      allow create, update: if isAdmin() && isValidQuestion(incoming());
+      allow delete: if isAdmin();
     }
 
     // Rules for Test Results (Student Read/Write, Admin Read)
@@ -118,7 +121,8 @@ service cloud.firestore {
     // Rules for Mock Tests (Public Read, Admin Write)
     match /mock_tests/{testId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin() && isValidMockTest(incoming());
+      allow create, update: if isAdmin() && isValidMockTest(incoming());
+      allow delete: if isAdmin();
     }
   }
 }

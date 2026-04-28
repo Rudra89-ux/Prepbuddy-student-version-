@@ -6,17 +6,17 @@ import { doc, getDoc } from 'firebase/firestore';
 import { UserProfile } from './types';
 
 import Shell from './components/layout/Shell';
-import Dashboard from './pages/Dashboard';
+import Tests from './pages/Tests';
 import Subjects from './pages/Subjects';
 import Chapters from './pages/Chapters';
 import TestMode from './pages/TestMode';
 import Results from './pages/Results';
-import Progress from './pages/Progress';
-import Tests from './pages/Tests';
+import AIDoubtSolver from './pages/AIDoubtSolver';
 import Login from './pages/Login';
 import AdminHub from './pages/Admin/AdminHub';
 import QuestionManager from './pages/Admin/QuestionManager';
 import MockTestManager from './pages/Admin/MockTestManager';
+import UserResultsList from './pages/Admin/UserResultsList';
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
       </div>
     );
   }
@@ -53,7 +53,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   if (adminOnly) {
     const isDesignatedAdmin = user?.email === 'rudrapable2010@gmail.com' || user?.email === 'leaninkclothing@gmail.com';
     if (profile?.role !== 'admin' && !isDesignatedAdmin) {
-      return <Navigate to="/" replace />;
+      return <Navigate to="/tests" replace />;
     }
   }
 
@@ -66,22 +66,22 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/" element={<Navigate to="/tests" replace />} />
+        <Route path="/tests" element={<ProtectedRoute><Tests /></ProtectedRoute>} />
+        <Route path="/solutions" element={<ProtectedRoute><AIDoubtSolver /></ProtectedRoute>} />
+        
         <Route path="/subjects" element={<ProtectedRoute><Subjects /></ProtectedRoute>} />
         <Route path="/chapters" element={<ProtectedRoute><Chapters /></ProtectedRoute>} />
         <Route path="/test" element={<ProtectedRoute><TestMode /></ProtectedRoute>} />
         <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-        <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-        
-        <Route path="/tests" element={<ProtectedRoute><Tests /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><div>Settings Page coming soon</div></ProtectedRoute>} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminHub /></ProtectedRoute>} />
         <Route path="/admin/questions" element={<ProtectedRoute adminOnly><QuestionManager /></ProtectedRoute>} />
         <Route path="/admin/mock-tests" element={<ProtectedRoute adminOnly><MockTestManager /></ProtectedRoute>} />
+        <Route path="/admin/results" element={<ProtectedRoute adminOnly><UserResultsList /></ProtectedRoute>} />
         
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/tests" replace />} />
       </Routes>
     </BrowserRouter>
   );

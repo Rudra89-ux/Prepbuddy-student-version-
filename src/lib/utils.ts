@@ -10,7 +10,8 @@ export const getDriveDirectLink = (url: string) => {
   const regExp = /(?:https?:\/\/)?(?:drive\.google\.com\/(?:file\/d\/|open\?id=)|(?:docs\.google\.com\/file\/d\/))([a-zA-Z0-9_-]+)/;
   const match = url.match(regExp);
   if (match && match[1]) {
-    return `https://drive.google.com/uc?id=${match[1]}`;
+    // Using the alternative format that often works better for direct images
+    return `https://docs.google.com/uc?export=view&id=${match[1]}`;
   }
   return url;
 };

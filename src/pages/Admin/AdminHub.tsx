@@ -174,6 +174,9 @@ export default function AdminHub() {
               <Link to="/admin/mock-tests" className="block w-full py-5 bg-white border border-slate-200 text-black rounded-lg font-black text-[10px] uppercase tracking-[0.2em] hover:border-black transition-all text-center">
                 Mock Test Manager
               </Link>
+              <Link to="/admin/results" className="block w-full py-5 bg-white border border-slate-200 text-black rounded-lg font-black text-[10px] uppercase tracking-[0.2em] hover:border-black transition-all text-center">
+                User Performance
+              </Link>
             </div>
           </div>
         </div>

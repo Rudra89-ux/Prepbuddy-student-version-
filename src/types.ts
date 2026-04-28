@@ -42,6 +42,12 @@ export interface MockTest {
   createdAt: any;
 }
 
+export interface UserAnswer {
+  questionId: string;
+  selectedAnswer: string;
+  isCorrect: boolean;
+}
+
 export interface TestResult {
   id: string;
   studentId: string;
@@ -54,4 +60,8 @@ export interface TestResult {
   accuracy: number;
   timestamp: any;
   testType: 'chapter' | 'mock' | 'subjective';
+  answers?: UserAnswer[];
+  studentEmail?: string;
+  subjectName?: string;
+  testTitle?: string;
 }

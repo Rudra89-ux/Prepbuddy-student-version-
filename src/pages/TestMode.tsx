@@ -125,10 +125,25 @@ export default function TestMode() {
 
     const accuracy = Math.round((correctCount / questions.length) * 100);
 
+    const userAnswers = questions.map(q => ({
+      questionId: q.id,
+      selectedAnswer: answers[q.id] || 'unanswered',
+      isCorrect: answers[q.id] === q.correctAnswer
+    }));
+
     try {
+      // Fetch subject name for record
+      let subjectName = '';
+      if (subjectId) {
+        const sDoc = await getDoc(doc(db, 'subjects', subjectId));
+        if (sDoc.exists()) subjectName = sDoc.data().name;
+      }
+
       const resultData = {
         studentId: auth.currentUser?.uid,
+        studentEmail: auth.currentUser?.email,
         subjectId: subjectId || questions[0]?.subjectId || '',
+        subjectName: subjectName || 'General',
         chapterId: chapterId || 'mock',
         score: correctCount,
         totalQuestions: questions.length,
@@ -136,7 +151,8 @@ export default function TestMode() {
         wrongAnswers: questions.length - correctCount,
         accuracy,
         timestamp: serverTimestamp(),
-        testType: mockTestId ? 'mock' : 'chapter'
+        testType: mockTestId ? 'mock' : 'chapter',
+        answers: userAnswers
       };
 
       const docRef = await addDoc(collection(db, 'test_results'), resultData);
@@ -181,7 +197,7 @@ export default function TestMode() {
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-32 md:pb-20">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 pb-32 md:pb-20">
       {/* Pause Overlay */}
       <AnimatePresence>
         {isPaused && (
@@ -218,13 +234,13 @@ export default function TestMode() {
         )}
       </AnimatePresence>
 
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm sticky top-4 z-10 border border-slate-100 font-sans">
-        <div className="flex items-center gap-6">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-all">
-            <ArrowLeft size={18} />
+      <div className="flex justify-between items-center bg-white p-4 md:p-6 rounded-2xl shadow-sm sticky top-2 md:top-4 z-10 border border-slate-100 font-sans">
+        <div className="flex items-center gap-3 md:gap-6">
+          <button onClick={() => navigate(-1)} className="p-1 md:p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-all">
+            <ArrowLeft size={16} md:size={18} />
           </button>
           <div>
-            <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">
+            <h4 className="text-[8px] md:text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">
               {mockTestId ? 'Mock Test' : 'Chapter Test'}
             </h4>
             <p className="text-xs font-black text-black uppercase tracking-widest leading-none">Question {currentIndex + 1} / {questions.length}</p>
@@ -258,34 +274,34 @@ export default function TestMode() {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div
+          <motion.div
           key={currentIndex}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className="bg-white p-10 md:p-16 rounded-big border border-slate-100 shadow-sm"
+          className="bg-white p-6 md:p-16 rounded-big border border-slate-100 shadow-sm"
         >
-          <div className="flex items-start justify-between mb-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">
+          <div className="flex items-start justify-between mb-6 md:mb-10 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">
             <span>Question {currentQuestion.id.slice(0, 4)}</span>
           </div>
 
           {currentQuestion.imageUrl && (
-            <div className="mb-12 rounded-2xl overflow-hidden border border-slate-100 bg-white p-2">
+            <div className="mb-8 md:mb-12 rounded-2xl overflow-hidden border border-slate-100 bg-white p-2">
               <img 
                 src={getDriveDirectLink(currentQuestion.imageUrl)} 
                 alt="Question Image" 
-                className="max-h-[300px] w-auto mx-auto object-contain rounded-xl"
+                className="max-h-[200px] md:max-h-[300px] w-auto mx-auto object-contain rounded-xl"
                 referrerPolicy="no-referrer"
               />
             </div>
           )}
 
-          <h2 className="text-xl md:text-3xl font-black text-black mb-16 leading-tight uppercase tracking-tight">
+          <h2 className="text-lg md:text-3xl font-black text-black mb-8 md:mb-16 leading-tight uppercase tracking-tight">
             <LatexRenderer text={currentQuestion.questionText} />
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {currentQuestion.options?.map((option, idx) => {
               const letter = String.fromCharCode(65 + idx);
               const isSelected = answers[currentQuestion.id] === option;
@@ -293,18 +309,18 @@ export default function TestMode() {
                 <button
                   key={idx}
                   onClick={() => handleOptionSelect(option)}
-                  className={`w-full p-6 rounded-xl border-2 text-left transition-all flex items-center gap-6 group ${
+                  className={`w-full p-4 md:p-6 rounded-xl border-2 text-left transition-all flex items-center gap-4 md:gap-6 group ${
                     isSelected 
                       ? 'border-black bg-black text-white shadow-xl' 
                       : 'border-slate-50 bg-slate-50/50 hover:border-slate-300'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-black transition-all text-xs shrink-0 ${
+                  <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg flex items-center justify-center font-black transition-all text-[10px] md:text-xs shrink-0 ${
                     isSelected ? 'bg-white text-black' : 'bg-white text-slate-400 group-hover:text-black'
                   }`}>
                     {letter}
                   </div>
-                  <span className={`font-black text-sm uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-600'}`}>
+                  <span className={`font-black text-xs md:text-sm uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-600'}`}>
                     <LatexRenderer text={option} />
                   </span>
                 </button>
@@ -312,11 +328,11 @@ export default function TestMode() {
             })}
           </div>
 
-          <div className="mt-16 flex justify-between items-center">
+          <div className="mt-8 md:mt-16 flex flex-col md:flex-row justify-between items-center gap-4">
             <button
               onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
-              className="px-6 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-300 hover:text-black disabled:opacity-0 transition-all"
+              className="w-full md:w-auto px-6 py-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-300 hover:text-black disabled:opacity-0 transition-all"
             >
               Previous
             </button>
@@ -328,7 +344,7 @@ export default function TestMode() {
                   handleSubmit();
                 }
               }}
-              className="px-10 py-5 bg-black hover:bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl flex items-center gap-3 group"
+              className="w-full md:w-auto px-10 py-5 bg-black hover:bg-slate-800 text-white rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl flex items-center justify-center gap-3 group"
             >
               {currentIndex === questions.length - 1 ? 'End Test' : 'Next Question'}
               <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
