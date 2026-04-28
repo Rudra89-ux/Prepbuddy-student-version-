@@ -3,6 +3,7 @@ import { db } from '../../lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, where, orderBy, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { generateQuestions } from '../../lib/gemini';
 import { motion, AnimatePresence } from 'motion/react';
+import { handleFirestoreError, OperationType } from '../../lib/firestore-errors';
 import { 
   Plus, 
   Sparkles, 
@@ -246,7 +247,7 @@ export default function QuestionManager() {
       const snap = await getDocs(q);
       setExistingQuestions(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Question)));
     } catch (err) {
-      console.error(err);
+      handleFirestoreError(err, OperationType.LIST, 'questions');
     } finally {
       setLoading(false);
     }
@@ -327,7 +328,7 @@ export default function QuestionManager() {
         imageUrl: ''
       });
     } catch (err: any) {
-      setStatus({ type: 'error', message: 'Failed to save: ' + err.message });
+      handleFirestoreError(err, OperationType.WRITE, 'questions');
     } finally {
       setLoading(false);
     }
