@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user core data and settings.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Educational subjects like Mathematics, Science.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["name"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "Individual chapters within a subject.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "name": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["subjectId", "name"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Individual practice questions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "type": { "type": "string", "enum": ["mcq", "numerical"] },
+        "questionText": { "type": "string" },
+        "options": { "type": "array" },
+        "correctAnswer": { "type": "string" },
+        "explanation": { "type": "string" }
+      },
+      "required": ["chapterId", "subjectId", "type", "questionText", "correctAnswer"]
+    },
+    "TestResult": {
+      "title": "Test Result",
+      "description": "Results of student practice tests.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "correctAnswers": { "type": "number" },
+        "wrongAnswers": { "type": "number" },
+        "accuracy": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "testType": { "type": "string", "enum": ["chapter", "mock", "subjective"] }
+      },
+      "required": ["studentId", "score", "timestamp"]
+    },
+    "MockTest": {
+      "title": "Mock Test",
+      "description": "Full-length mock tests composed of multiple questions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "questionIds": { "type": "array" },
+        "duration": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "subjectId", "questionIds"]
+    }
+  },
+  "firestore": {
+    "user_profiles/{userId}": {
+      "schema": "UserProfile",
+      "description": "Individual user profiles."
+    },
+    "subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "List of available subjects."
+    },
+    "chapters/{chapterId}": {
+      "schema": "Chapter",
+      "description": "Chapters associated with subjects."
+    },
+    "questions/{questionId}": {
+      "schema": "Question",
+      "description": "Pool of practice questions."
+    },
+    "test_results/{resultId}": {
+      "schema": "TestResult",
+      "description": "History of test attempts."
+    },
+    "mock_tests/{testId}": {
+      "schema": "MockTest",
+      "description": "Collection of predefined mock tests."
+    }
+  }
+}
