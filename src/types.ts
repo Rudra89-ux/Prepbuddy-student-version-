@@ -24,7 +24,7 @@ export interface Question {
   id: string;
   chapterId: string;
   subjectId: string;
-  type: 'mcq' | 'numerical';
+  type: 'mcq';
   questionText: string;
   options?: string[];
   correctAnswer: string;

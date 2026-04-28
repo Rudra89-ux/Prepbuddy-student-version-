@@ -45,7 +45,7 @@
         "id": { "type": "string" },
         "chapterId": { "type": "string" },
         "subjectId": { "type": "string" },
-        "type": { "type": "string", "enum": ["mcq", "numerical"] },
+        "type": { "type": "string", "enum": ["mcq"] },
         "questionText": { "type": "string" },
         "options": { "type": "array" },
         "correctAnswer": { "type": "string" },

@@ -63,7 +63,7 @@ service cloud.firestore {
     function isValidQuestion(data) {
       return data.keys().hasAll(['chapterId', 'subjectId', 'type', 'questionText', 'correctAnswer', 'explanation']) &&
              data.questionText is string && data.questionText.size() <= 5000 &&
-             data.type in ['mcq', 'numerical'];
+             data.type == 'mcq';
     }
 
     function isValidTestResult(data) {

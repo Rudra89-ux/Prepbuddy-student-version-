@@ -2,17 +2,22 @@ import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-export async function generateQuestions(subject: string, chapter: string, count: number = 5) {
-  const prompt = `Generate ${count} practice questions for CBSE Class 10 ${subject}, Chapter: ${chapter}.
-  The questions should be a mix of MCQ and numerical type.
-  Use LaTeX (wrapped in single $ for inline and double $$ for block) for all mathematical expressions, chemical formulas, and symbols.
+export async function generateQuestions(subject: string, chapter: string, count: number = 5, existingQuestions: string[] = []) {
+  const prompt = `Generate ${count} HIGH-QUALITY, UNIQUE MCQ questions for CBSE Class 10 ${subject}, Chapter: ${chapter}.
+  
+  STRICT RULES:
+  1. ONLY MCQ (Multiple Choice) questions. DO NOT generate numerical entry or any other type.
+  2. Use LaTeX (wrapped in single $ for inline and double $$ for block) for ALL mathematical expressions, formulas, and symbols.
+  3. Ensure questions are DIFFERENT from common patterns and cover diverse concepts within the chapter.
+  ${existingQuestions.length > 0 ? `4. IMPORTANT: DO NOT repeat or duplicate the following existing questions: ${existingQuestions.slice(-10).join(', ')}` : ''}
+  
   Provide the output in JSON format as an array of objects with the following structure:
   {
-    "type": "mcq" | "numerical",
-    "questionText": "string",
-    "options": ["string", "string", "string", "string"] (only for MCQ),
-    "correctAnswer": "string",
-    "explanation": "string"
+    "type": "mcq",
+    "questionText": "Detailed question string with LaTeX",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": "The exact string from one of the options",
+    "explanation": "Brief step-by-step logic"
   }
   Respond ONLY with the JSON array.`;
 

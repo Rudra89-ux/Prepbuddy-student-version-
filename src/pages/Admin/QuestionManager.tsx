@@ -184,7 +184,12 @@ export default function QuestionManager() {
       const subName = subjects.find(s => s.id === selectedSubject)?.name || '';
       const chapName = chapters.find(c => c.id === selectedChapter)?.name || 'General';
       
-      const response = await generateQuestions(subName, chapName, 5);
+      const response = await generateQuestions(
+        subName, 
+        chapName, 
+        5, 
+        existingQuestions.map(q => q.questionText)
+      );
       const newQuestions = response.map(q => ({
         ...q,
         subjectId: selectedSubject,
@@ -214,7 +219,12 @@ export default function QuestionManager() {
     
     setGenerating(true);
     try {
-      const response = await generateQuestions(subName, chapName, 1);
+      const response = await generateQuestions(
+        subName, 
+        chapName, 
+        1, 
+        [...existingQuestions.map(q => q.questionText), ...questions.map(q => q.questionText || '')]
+      );
       const newQ = response[0];
       const updated = [...questions];
       updated[index] = { ...newQ, subjectId: q.subjectId, chapterId: q.chapterId };
@@ -410,20 +420,6 @@ export default function QuestionManager() {
                 )}
               </div>
               <form onSubmit={(e) => handleManualSubmit(e)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Question Type</label>
-                    <select
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                      value={manualQuestion.type}
-                      onChange={(e) => setManualQuestion({ ...manualQuestion, type: e.target.value as any })}
-                    >
-                      <option value="mcq">MCQ (Multiple Choice)</option>
-                      <option value="numerical">Numerical</option>
-                    </select>
-                  </div>
-                </div>
-
                 <div>
                   <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Image URL (Google Drive)</label>
                   <input
@@ -485,28 +481,17 @@ export default function QuestionManager() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Correct Answer</label>
-                    {manualQuestion.type === 'mcq' ? (
-                      <select
-                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                        value={manualQuestion.correctAnswer}
-                        onChange={(e) => setManualQuestion({ ...manualQuestion, correctAnswer: e.target.value })}
-                        required
-                      >
-                        <option value="">Select Option</option>
-                        {manualQuestion.options?.map((opt, i) => (
-                          <option key={i} value={opt}>{String.fromCharCode(65 + i)}: {opt.slice(0, 30)}...</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                        placeholder="Type correct answer..."
-                        value={manualQuestion.correctAnswer}
-                        onChange={(e) => setManualQuestion({ ...manualQuestion, correctAnswer: e.target.value })}
-                        required
-                      />
-                    )}
+                    <select
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+                      value={manualQuestion.correctAnswer}
+                      onChange={(e) => setManualQuestion({ ...manualQuestion, correctAnswer: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Option</option>
+                      {manualQuestion.options?.map((opt, i) => (
+                        <option key={i} value={opt}>{String.fromCharCode(65 + i)}: {opt.slice(0, 30)}...</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Explanation</label>
