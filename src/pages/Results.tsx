@@ -156,7 +156,8 @@ export default function Results() {
           <div className="space-y-6">
             <div className="space-y-3">
               {Object.entries(chapterBreakdown).map(([chapterId, data], i) => {
-                const acc = Math.round((data.correct / data.total) * 100);
+                const chapterData = data as { correct: number, total: number };
+                const acc = Math.round((chapterData.correct / chapterData.total) * 100);
                 return (
                   <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl">
                     <span className="text-[10px] font-black text-black uppercase tracking-widest truncate max-w-[150px]">
@@ -255,7 +256,7 @@ export default function Results() {
                       </div>
                     )}
 
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-3">
                       <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Input:</span>
                         <span className={`text-[10px] font-black uppercase tracking-widest ${answer.isCorrect ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -271,15 +272,6 @@ export default function Results() {
                         </div>
                       )}
                     </div>
-
-                    {q?.explanation && (
-                      <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-xl">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Explanatory Delta</p>
-                        <p className="text-[10px] font-bold text-black uppercase tracking-tight leading-relaxed">
-                          {q.explanation}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 );
               })}

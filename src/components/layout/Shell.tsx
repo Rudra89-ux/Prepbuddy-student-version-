@@ -62,8 +62,8 @@ export default function Shell({ children }: ShellProps) {
 
   if (isTestPage) {
     return (
-      <div className="min-h-screen bg-slate-50 overflow-hidden font-sans">
-        <main className="w-full h-full overflow-y-auto p-4 md:p-12 relative bg-[#F8F9FA]">
+      <div className="h-screen bg-slate-50 flex flex-col overflow-hidden font-sans">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 relative bg-[#F8F9FA]">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -71,6 +71,7 @@ export default function Shell({ children }: ShellProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               {children}
             </motion.div>

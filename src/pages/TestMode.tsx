@@ -33,7 +33,7 @@ export default function TestMode() {
   const [submitting, setSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // Default 10 minutes
   const [isPaused, setIsPaused] = useState(false);
-  const [pauseReason, setPauseReason] = useState<'switch' | 'manual' | null>(null);
+  const [pauseReason, setPauseReason] = useState<'switch' | 'manual' | 'resume' | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -45,13 +45,31 @@ export default function TestMode() {
 
     const fetchContent = async () => {
       try {
+        const storageKey = `test_progress_${mockTestId || chapterId}`;
+        const saved = localStorage.getItem(storageKey);
+        
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            setQuestions(data.questions);
+            setCurrentIndex(data.currentIndex);
+            setAnswers(data.answers);
+            setTimeLeft(data.timeLeft);
+            setIsPaused(true);
+            setPauseReason('resume');
+            setLoading(false);
+            return;
+          } catch (e) {
+            console.error("Failed to restore progress", e);
+          }
+        }
+
         if (mockTestId) {
           const testSnap = await getDoc(doc(db, 'mock_tests', mockTestId));
           if (testSnap.exists()) {
             const testData = testSnap.data() as MockTest;
             setTimeLeft(testData.duration * 60);
             
-            // Fix: Use documentId() instead of 'id' field for document IDs
             const qSnap = await getDocs(query(collection(db, 'questions'), where(documentId(), 'in', testData.questionIds)));
             const fetched = qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Question));
             setQuestions(shuffleArray(fetched));
@@ -70,6 +88,21 @@ export default function TestMode() {
     };
     fetchContent();
   }, [chapterId, mockTestId, navigate]);
+
+  // Save progress periodically
+  useEffect(() => {
+    if (loading || questions.length === 0 || submitting) return;
+    
+    const storageKey = `test_progress_${mockTestId || chapterId}`;
+    const progress = {
+      questions,
+      currentIndex,
+      answers,
+      timeLeft,
+      updatedAt: Date.now()
+    };
+    localStorage.setItem(storageKey, JSON.stringify(progress));
+  }, [currentIndex, answers, timeLeft, questions, loading, submitting, mockTestId, chapterId]);
 
   useEffect(() => {
     if (loading || questions.length === 0 || isPaused) return;
@@ -150,6 +183,7 @@ export default function TestMode() {
         subjectId: subjectId || questions[0]?.subjectId || '',
         subjectName: subjectName || 'General',
         chapterId: chapterId || 'mock',
+        mockTestId: mockTestId || null,
         score: correctCount,
         totalQuestions: questions.length,
         correctAnswers: correctCount,
@@ -161,6 +195,10 @@ export default function TestMode() {
       };
 
       const docRef = await addDoc(collection(db, 'test_results'), resultData);
+      
+      // Clear persistence
+      localStorage.removeItem(`test_progress_${mockTestId || chapterId}`);
+      
       navigate(`/results?id=${docRef.id}`);
     } catch (err) {
       console.error(err);
@@ -210,7 +248,7 @@ export default function TestMode() {
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 pb-32 md:pb-20">
+    <div className="max-w-4xl mx-auto space-y-4 pb-20">
       {/* Pause Overlay */}
       <AnimatePresence>
         {isPaused && (
@@ -225,11 +263,13 @@ export default function TestMode() {
                 <RefreshCw size={32} />
               </div>
               <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
-                {pauseReason === 'switch' ? 'Test Paused' : 'Paused'}
+                {pauseReason === 'switch' ? 'Test Paused' : pauseReason === 'resume' ? 'Resume Session' : 'Paused'}
               </h2>
               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] leading-relaxed">
                 {pauseReason === 'switch' 
                   ? 'Warning: You switched tabs. The questions have been shuffled to keep the test fair.' 
+                  : pauseReason === 'resume'
+                  ? 'We found a saved session. You can continue exactly where you left off.'
                   : 'The timer has been paused. Resume when you are ready.'}
               </p>
               <button
@@ -261,9 +301,9 @@ export default function TestMode() {
         </div>
         
         <div className="flex items-center gap-4 md:gap-8">
-          <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-lg border border-slate-100">
-            <Timer size={16} className={timeLeft < 60 ? 'text-black animate-pulse' : 'text-slate-300'} />
-            <span className={`font-mono font-black text-xs ${timeLeft < 60 ? 'text-black' : 'text-slate-600'}`}>
+          <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
+            <Timer size={14} className={timeLeft < 60 ? 'text-black animate-pulse' : 'text-slate-300'} />
+            <span className={`font-mono font-black text-[10px] md:text-xs ${timeLeft < 60 ? 'text-black' : 'text-slate-600'}`}>
               {formatTime(timeLeft)}
             </span>
           </div>
@@ -295,26 +335,26 @@ export default function TestMode() {
           transition={{ duration: 0.3 }}
           className="bg-white p-6 md:p-16 rounded-big border border-slate-100 shadow-sm"
         >
-          <div className="flex items-start justify-between mb-6 md:mb-10 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">
+          <div className="flex items-start justify-between mb-4 md:mb-6 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
             <span>Question {currentQuestion.id.slice(0, 4)}</span>
           </div>
 
           {currentQuestion.imageUrl && (
-            <div className="mb-8 md:mb-12 rounded-3xl overflow-hidden border-4 border-slate-50 bg-white p-4 shadow-sm">
+            <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden border-2 border-slate-50 bg-white p-2 shadow-sm">
               <img 
                 src={getDriveDirectLink(currentQuestion.imageUrl)} 
                 alt="Question Content" 
-                className="max-h-[400px] w-auto mx-auto object-contain rounded-2xl"
+                className="max-h-[35vh] w-auto mx-auto object-contain rounded-xl"
                 referrerPolicy="no-referrer"
               />
             </div>
           )}
 
-          <h2 className="text-lg md:text-3xl font-black text-black mb-8 md:mb-16 leading-tight uppercase tracking-tight">
+          <h2 className="text-base md:text-2xl font-black text-black mb-6 md:mb-10 leading-tight uppercase tracking-tight">
             <LatexRenderer text={currentQuestion.questionText} />
           </h2>
 
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-2 md:space-y-3">
             {currentQuestion.options?.map((option, idx) => {
               const letter = String.fromCharCode(65 + idx);
               const isSelected = answers[currentQuestion.id] === option;
@@ -322,18 +362,18 @@ export default function TestMode() {
                 <button
                   key={idx}
                   onClick={() => handleOptionSelect(option)}
-                  className={`w-full p-4 md:p-6 rounded-xl border-2 text-left transition-all flex items-center gap-4 md:gap-6 group ${
+                  className={`w-full p-3 md:p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 md:gap-4 group ${
                     isSelected 
-                      ? 'border-black bg-black text-white shadow-xl' 
+                      ? 'border-black bg-black text-white shadow-lg' 
                       : 'border-slate-50 bg-slate-50/50 hover:border-slate-300'
                   }`}
                 >
-                  <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg flex items-center justify-center font-black transition-all text-[10px] md:text-xs shrink-0 ${
+                  <div className={`w-7 h-7 md:w-9 md:h-9 rounded-lg flex items-center justify-center font-black transition-all text-[9px] md:text-[10px] shrink-0 ${
                     isSelected ? 'bg-white text-black' : 'bg-white text-slate-400 group-hover:text-black'
                   }`}>
                     {letter}
                   </div>
-                  <span className={`font-black text-xs md:text-sm uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-600'}`}>
+                  <span className={`font-black text-xs md:text-[13px] uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-600'}`}>
                     <LatexRenderer text={option} />
                   </span>
                 </button>
@@ -341,7 +381,7 @@ export default function TestMode() {
             })}
           </div>
 
-          <div className="mt-8 md:mt-16 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="mt-6 md:mt-10 flex flex-col md:flex-row justify-between items-center gap-4">
             <button
               onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
