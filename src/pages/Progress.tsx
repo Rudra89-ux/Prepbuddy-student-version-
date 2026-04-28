@@ -59,12 +59,12 @@ export default function Progress() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-10 rounded-big border border-slate-100 shadow-sm gap-8 transition-all hover:shadow-md">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-none mb-3">Analytical Growth</h1>
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Quantitative performance assessment over time</p>
+          <h1 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-none mb-3">Your Progress</h1>
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">See how you're improving over time</p>
         </div>
         <div className="flex items-center gap-12 w-full md:w-auto pt-8 md:pt-0 border-t md:border-t-0 border-slate-50 justify-between md:justify-end">
           <div className="text-center md:text-right">
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Peak</p>
+            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Best Score</p>
             <p className="text-3xl font-black text-black tracking-tighter tabular-nums">{bestScore}%</p>
           </div>
           <div className="text-center md:text-right">
@@ -117,7 +117,7 @@ export default function Progress() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-200 gap-6 border-2 border-dashed border-slate-50 rounded-2xl">
                 <BarChart3 size={48} className="opacity-5" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Insufficient Data Set</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Take a test to see your progress chart</p>
               </div>
             )}
           </div>
@@ -140,8 +140,8 @@ export default function Progress() {
               <div className="flex items-center gap-6 p-5 bg-white rounded-xl border border-dashed border-slate-100 opacity-40">
                 <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center text-slate-400 font-black text-xs">02</div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Accuracy Guard</p>
-                  <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">Required: 95% Rate</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Accuracy Goal</p>
+                  <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">Target: 95% Rate</p>
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function Progress() {
 
           <div className="bg-black p-10 rounded-big text-white relative overflow-hidden shadow-2xl">
             <div className="relative z-10">
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Tactical Directive</h4>
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Study Tip</h4>
               <p className="text-xs text-white/80 font-black uppercase tracking-widest leading-relaxed italic">
                 Focus on high-precision review. Accuracy over speed ensures alignment with curriculum standards.
               </p>

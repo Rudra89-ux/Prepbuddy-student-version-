@@ -76,7 +76,7 @@ export default function Tests() {
         <div className="relative z-10">
           <h1 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Mock Tests</h1>
           <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] max-w-md leading-relaxed">
-            Practice with full-length tests to prepare for your exams.
+            Practice for your exams with full-length tests.
           </p>
         </div>
         <GraduationCap size={120} className="text-white/5 absolute right-12 bottom-0 rotate-12" />
@@ -228,14 +228,14 @@ export default function Tests() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
-                        <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded truncate max-w-[120px]">
+                        <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded truncate max-w-[150px]">
                           {result.subjectName}
                         </span>
                         <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-300 whitespace-nowrap">
                           {result.timestamp?.toDate ? new Date(result.timestamp.toDate()).toLocaleDateString() : 'Just now'}
                         </span>
                       </div>
-                      <h4 className="text-sm md:text-lg font-black text-black uppercase tracking-tight line-clamp-1">{result.testType === 'mock' ? 'Mock Session' : 'Chapter Session'}</h4>
+                      <p className="text-sm md:text-lg font-black text-black uppercase tracking-tight line-clamp-1">{result.testType === 'mock' ? 'Full Mock Test' : 'Topic Test'}</p>
                     </div>
                   </div>
 

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { db, auth } from '../lib/firebase';
 import { doc, getDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { 
   Trophy, 
   ArrowRight, 
@@ -56,8 +57,12 @@ export default function Results() {
             for (let i = 0; i < qIds.length; i += 10) {
               const chunk = qIds.slice(i, i + 10);
               if (chunk.length === 0) break;
-              const qSnap = await getDocs(query(collection(db, 'questions'), where('__name__', 'in', chunk)));
-              questionDocs.push(...qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Question)));
+              try {
+                const qSnap = await getDocs(query(collection(db, 'questions'), where('__name__', 'in', chunk)));
+                questionDocs.push(...qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Question)));
+              } catch (err) {
+                handleFirestoreError(err, OperationType.GET, 'questions-review-chunk');
+              }
             }
             setReviewedQuestions(questionDocs);
           }
@@ -71,7 +76,7 @@ export default function Results() {
     fetchResult();
   }, [resultId, navigate]);
 
-  if (loading) return <div className="p-10 text-center animate-pulse py-40 font-black text-xs uppercase tracking-widest text-slate-300">Computing Metrics...</div>;
+  if (loading) return <div className="p-10 text-center animate-pulse py-40 font-black text-xs uppercase tracking-widest text-slate-300">Loading your results...</div>;
 
   if (!result) return <div className="text-center py-20 font-black text-xs uppercase tracking-widest text-red-500">Record not found</div>;
 
@@ -103,17 +108,17 @@ export default function Results() {
         </div>
 
         <h1 className="text-2xl md:text-5xl font-black text-black mb-4 uppercase tracking-tighter">
-          {isPassed ? 'Test Validated' : 'Delta Observed'}
+          {isPassed ? 'Test Completed' : 'Keep Practicing'}
         </h1>
         <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-[0.25em] mb-12 md:mb-16 max-w-sm mx-auto leading-relaxed">
-          {result.subjectName || 'General'} Performance Evaluation Summary
+          Here's a summary of how you did in the {result.subjectName || 'General'} test.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
           <div className="p-8 bg-slate-50 border border-slate-100 rounded-2xl">
-            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Volume</p>
+            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Goal</p>
             <p className="text-3xl font-black text-black tracking-tighter">{result.totalQuestions}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Total Items</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Questions</p>
           </div>
           <div className="p-8 bg-black text-white rounded-2xl shadow-xl">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-3">Performance</p>
@@ -121,10 +126,10 @@ export default function Results() {
               <span className="text-3xl font-black text-white tracking-tighter">{result.score}</span>
               <span className="text-lg font-bold text-slate-600">/ {result.totalQuestions}</span>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Raw Score</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Points</p>
           </div>
           <div className="p-8 bg-slate-50 border border-slate-100 rounded-2xl">
-            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Precision</p>
+            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-3">Accuracy</p>
             <p className="text-3xl font-black text-black tracking-tighter">{result.accuracy}%</p>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Success Rate</p>
           </div>
@@ -154,7 +159,7 @@ export default function Results() {
             <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
               <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
                  <Target size={14} />
-                 Growth Identification
+                 Subject Breakdown
               </h3>
               <div className="space-y-6">
                 <div className="space-y-3">
@@ -186,7 +191,7 @@ export default function Results() {
             <div className="bg-white p-8 rounded-big border border-slate-100 shadow-sm">
               <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
                 <Layers size={14} />
-                Analytical Breakdown
+                Score Details
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
@@ -204,10 +209,10 @@ export default function Results() {
           <div className="col-span-full">
             <div className={`p-10 rounded-big border text-center ${isPassed ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
                <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${isPassed ? 'text-emerald-600' : 'text-red-600'}`}>
-                 {isPassed ? 'Academic Standing: Valid' : 'Academic Standing: Review Required'}
+                 {isPassed ? 'You passed!' : 'Needs more practice'}
                </p>
                <p className={`text-xl font-black uppercase ${isPassed ? 'text-emerald-900' : 'text-red-900'}`}>
-                 {isPassed ? 'Excellent precision maintained.' : 'Additional practice cycles recommended.'}
+                 {isPassed ? 'You did very well in this test.' : 'Try reviewing the topics you missed.'}
                </p>
             </div>
           </div>
@@ -224,7 +229,7 @@ export default function Results() {
           >
             <h3 className="text-xs font-black text-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4 px-4 pt-8 border-t border-slate-50">
               <MessageSquareQuote size={14} />
-              Response Validation Report
+              Review Your Answers
             </h3>
             <div className="space-y-6">
               {result.answers?.map((answer, index) => {
@@ -232,16 +237,23 @@ export default function Results() {
                 return (
                   <div key={index} className={`p-8 rounded-big border ${answer.isCorrect ? 'bg-white border-emerald-100' : 'bg-white border-red-100'} shadow-sm`}>
                     <div className="flex justify-between items-start mb-6">
-                      <span className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded border ${
-                        answer.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
-                      }`}>
-                        {answer.isCorrect ? 'Correct Validation' : 'Inaccurate Response'}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded border ${
+                          answer.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
+                        }`}>
+                          {answer.isCorrect ? 'Correct' : 'Incorrect'}
+                        </span>
+                        {q?.type && (
+                          <span className="text-[8px] font-black text-slate-400 border border-slate-100 px-2 py-1 rounded bg-slate-50 uppercase tracking-widest">
+                            {q.type === 'assertion_reason' ? 'A&R' : q.type === 'match_following' ? 'Match' : 'MCQ'}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Q. {index + 1}</span>
                     </div>
                     
-                    <div className="font-black text-black text-sm uppercase tracking-tight leading-relaxed mb-6">
-                      <LatexRenderer text={q?.questionText || 'Loading Item...'} />
+                    <div className="font-black text-black text-sm uppercase tracking-tight leading-relaxed mb-6 whitespace-pre-wrap">
+                      <LatexRenderer text={q?.questionText || 'Loading...'} />
                     </div>
 
                     {q?.imageUrl && (
@@ -257,14 +269,14 @@ export default function Results() {
 
                     <div className="space-y-3">
                       <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Input:</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Answer:</span>
                         <span className={`text-[10px] font-black uppercase tracking-widest ${answer.isCorrect ? 'text-emerald-600' : 'text-red-500'}`}>
                            <LatexRenderer text={answer.selectedAnswer} />
                         </span>
                       </div>
                       {!answer.isCorrect && (
                         <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Expected:</span>
+                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Correct Answer:</span>
                           <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                             <LatexRenderer text={q?.correctAnswer || ''} />
                           </span>

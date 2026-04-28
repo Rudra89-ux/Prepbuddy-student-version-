@@ -55,9 +55,12 @@ export default function AIDoubtSolver() {
     setLoading(true);
 
     try {
-      const prompt = `You are a professional study doubt solver for competitive exams like JEE/NEET. 
-      Answer the student's doubt clearly and concisely. 
-      If there is math involved, use LaTeX format like $x^2$.
+      const prompt = `You are a professional and friendly study assistant. 
+      Answer the student's doubt clearly and simply in the same language they used.
+      
+      If there is math involved, use LaTeX format like $x^2$. 
+      Always finish with a small encouraging note.
+
       Student doubt: ${input}`;
 
       const history = messages.map(m => ({
@@ -112,8 +115,8 @@ export default function AIDoubtSolver() {
             <BrainCircuit size={20} className="text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-black uppercase tracking-widest leading-none mb-1">AI Solution</h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active • 1.5 Flash Model</p>
+            <h1 className="text-sm font-black uppercase tracking-widest leading-none mb-1">AI Helper</h1>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assistant Online</p>
           </div>
         </div>
         <button 
@@ -132,9 +135,9 @@ export default function AIDoubtSolver() {
               <MessageSquareQuote size={32} />
             </div>
             <div className="max-w-xs">
-              <h2 className="text-sm font-black text-black uppercase tracking-widest mb-2">Instant Doubt Solver</h2>
+              <h2 className="text-sm font-black text-black uppercase tracking-widest mb-2">Ask a Question</h2>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                Type any question or doubt related to your syllabus and get an instant step-by-step solution.
+                Type any question you have about your studies and get a simple, step-by-step answer.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 w-full max-w-sm">
@@ -213,7 +216,7 @@ export default function AIDoubtSolver() {
           </button>
         </form>
         <p className="text-center mt-6 text-[8px] font-black text-slate-300 uppercase tracking-widest">
-          Gemini AI Solutions may occasionally generate inaccurate responses. Cross-verify with textbook.
+          AI can make mistakes. Please check your textbook to be sure.
         </p>
       </div>
     </div>

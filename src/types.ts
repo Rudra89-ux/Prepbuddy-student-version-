@@ -24,7 +24,7 @@ export interface Question {
   id: string;
   chapterId: string;
   subjectId: string;
-  type: 'mcq';
+  type: 'mcq' | 'assertion_reason' | 'match_following';
   questionText: string;
   options?: string[];
   correctAnswer: string;

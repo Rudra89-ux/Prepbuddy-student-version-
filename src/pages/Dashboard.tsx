@@ -76,8 +76,8 @@ export default function Dashboard() {
               <ShieldCheck size={24} />
             </div>
             <div>
-              <h1 className="text-white font-black text-sm uppercase tracking-widest leading-none mb-1">System Administrator Identified</h1>
-              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Access restricted management console</p>
+              <h1 className="text-white font-black text-sm uppercase tracking-widest leading-none mb-1">Admin Dashboard Access</h1>
+              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Manage subjects and questions</p>
             </div>
           </div>
           <Link to="/admin" className="px-8 py-3 bg-white text-black hover:bg-slate-200 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all">
@@ -90,8 +90,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white p-8 rounded-big border border-slate-100 shadow-sm transition-all hover:shadow-md">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="font-black text-black text-xs uppercase tracking-[0.2em]">Subject Performance</h3>
-            <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Updates</span>
+            <h3 className="font-black text-black text-xs uppercase tracking-[0.2em]">Your Performance</h3>
+            <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Progress</span>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
@@ -119,7 +119,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="font-black uppercase tracking-widest text-sm">Full Mock Exam</p>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-tighter">Comprehensive Board Review</p>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-tighter">Practice like the real exam</p>
               </div>
             </div>
             <button className="w-full sm:w-auto px-8 py-4 bg-white text-black hover:bg-slate-200 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3">
@@ -154,9 +154,9 @@ export default function Dashboard() {
               <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Accuracy</span>
             </div>
           </div>
-          <h4 className="font-black text-black uppercase tracking-widest text-xs mb-2">Learning Milestone</h4>
+          <h4 className="font-black text-black uppercase tracking-widest text-xs mb-2">Study Milestone</h4>
           <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter leading-relaxed max-w-[200px] mb-8">
-            {avgAccuracy > 80 ? "Mastery achieved in current topics." : "Consistent practice accelerates mastery."}
+            {avgAccuracy > 80 ? "Great job! You've mastered these topics." : "Keep practicing! Every test makes you better."}
           </p>
           <button className="w-full py-4 border-2 border-black text-black font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-black hover:text-white transition-all">
             Full Analytics
@@ -180,7 +180,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="font-black text-black text-xs uppercase tracking-widest">Chapter Test</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{new Date(res.timestamp?.toDate()).toLocaleDateString()}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{res.timestamp?.toDate ? new Date(res.timestamp.toDate()).toLocaleDateString() : 'Just now'}</p>
                   </div>
                 </div>
                 <div className="text-right">

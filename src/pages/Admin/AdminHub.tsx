@@ -169,13 +169,13 @@ export default function AdminHub() {
             </h3>
             <div className="space-y-6">
               <Link to="/admin/questions" className="block w-full py-5 bg-black text-white rounded-lg font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-800 transition-all text-center shadow-xl">
-                Question Manager
+                Manage Questions
               </Link>
               <Link to="/admin/mock-tests" className="block w-full py-5 bg-white border border-slate-200 text-black rounded-lg font-black text-[10px] uppercase tracking-[0.2em] hover:border-black transition-all text-center">
-                Mock Test Manager
+                Manage Tests
               </Link>
               <Link to="/admin/results" className="block w-full py-5 bg-white border border-slate-200 text-black rounded-lg font-black text-[10px] uppercase tracking-[0.2em] hover:border-black transition-all text-center">
-                User Performance
+                Student Performance
               </Link>
             </div>
           </div>

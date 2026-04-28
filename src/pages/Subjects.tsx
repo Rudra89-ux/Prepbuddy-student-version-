@@ -53,14 +53,14 @@ export default function Subjects() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-black uppercase tracking-widest">Board Syllabus</h1>
-          <p className="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Core Subjects for CBSE Class 10</p>
+          <h1 className="text-xl md:text-2xl font-black text-black uppercase tracking-widest">Your Subjects</h1>
+          <p className="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Check out your Class 10 study list</p>
         </div>
         <div className="relative w-full md:w-80">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
           <input
             type="text"
-            placeholder="SEARCH SUBJECTS..."
+            placeholder="FIND A SUBJECT..."
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-xl focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -92,7 +92,7 @@ export default function Subjects() {
                 
                 <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                   <span className="text-[10px] font-black text-black bg-slate-100 px-4 py-2 rounded uppercase tracking-[0.2em]">
-                    Curriculum Ready
+                    Ready to Study
                   </span>
                   <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-black group-hover:text-white transition-all">
                     <ChevronRight size={18} />
@@ -104,7 +104,7 @@ export default function Subjects() {
         ) : (
           <div className="col-span-full py-24 text-center">
             <BookOpen className="w-20 h-20 mx-auto mb-6 opacity-5" />
-            <p className="font-black text-xs uppercase tracking-[0.3em] text-slate-300">No data found</p>
+            <p className="font-black text-xs uppercase tracking-[0.3em] text-slate-300">Nothing here yet</p>
           </div>
         )}
       </div>

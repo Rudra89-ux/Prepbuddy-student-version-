@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, documentId } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { 
   ArrowLeft, 
   CheckCircle2, 
@@ -70,8 +71,23 @@ export default function TestMode() {
             const testData = testSnap.data() as MockTest;
             setTimeLeft(testData.duration * 60);
             
-            const qSnap = await getDocs(query(collection(db, 'questions'), where(documentId(), 'in', testData.questionIds)));
-            const fetched = qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Question));
+            // Fetch questions in chunks of 30 to avoid Firestore 'in' query limits
+            const questionIds = testData.questionIds;
+            const fetched: Question[] = [];
+            
+            for (let i = 0; i < questionIds.length; i += 30) {
+              const chunk = questionIds.slice(i, i + 30);
+              try {
+                const qSnap = await getDocs(query(
+                  collection(db, 'questions'), 
+                  where(documentId(), 'in', chunk)
+                ));
+                fetched.push(...qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Question)));
+              } catch (err) {
+                handleFirestoreError(err, OperationType.GET, 'questions-chunk');
+              }
+            }
+            
             setQuestions(shuffleArray(fetched));
           }
         } else {
@@ -194,7 +210,13 @@ export default function TestMode() {
         answers: userAnswers
       };
 
-      const docRef = await addDoc(collection(db, 'test_results'), resultData);
+      let docRef;
+      try {
+        docRef = await addDoc(collection(db, 'test_results'), resultData);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.CREATE, 'test_results');
+        return; // Should not reach here as handleFirestoreError throws
+      }
       
       // Clear persistence
       localStorage.removeItem(`test_progress_${mockTestId || chapterId}`);
@@ -262,16 +284,16 @@ export default function TestMode() {
               <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-10 text-white animate-pulse">
                 <RefreshCw size={32} />
               </div>
-              <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
-                {pauseReason === 'switch' ? 'Test Paused' : pauseReason === 'resume' ? 'Resume Session' : 'Paused'}
-              </h2>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] leading-relaxed">
-                {pauseReason === 'switch' 
-                  ? 'Warning: You switched tabs. The questions have been shuffled to keep the test fair.' 
-                  : pauseReason === 'resume'
-                  ? 'We found a saved session. You can continue exactly where you left off.'
-                  : 'The timer has been paused. Resume when you are ready.'}
-              </p>
+            <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
+              {pauseReason === 'switch' ? 'Wait a second!' : pauseReason === 'resume' ? 'Welcome Back!' : 'Test Paused'}
+            </h2>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] leading-relaxed">
+              {pauseReason === 'switch' 
+                ? 'It looks like you switched tabs. We\'ve shuffled the questions for fairness.' 
+                : pauseReason === 'resume'
+                ? 'Ready to pick up where you left off?'
+                : 'Take a breath. Resume whenever you\'re ready.'}
+            </p>
               <button
                 onClick={() => {
                    setIsPaused(false);
@@ -313,7 +335,7 @@ export default function TestMode() {
             className="px-6 py-3 bg-black hover:bg-slate-800 text-white rounded-lg font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
           >
             {submitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Send size={14} />}
-            <span className="hidden sm:inline">Finish</span>
+            <span className="hidden sm:inline">Submit</span>
           </button>
         </div>
       </div>
@@ -336,7 +358,14 @@ export default function TestMode() {
           className="bg-white p-6 md:p-16 rounded-big border border-slate-100 shadow-sm"
         >
           <div className="flex items-start justify-between mb-4 md:mb-6 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
-            <span>Question {currentQuestion.id.slice(0, 4)}</span>
+            <div className="flex items-center gap-4">
+              <span>Question {currentQuestion.id.slice(0, 4)}</span>
+              {currentQuestion.type && (
+                <span className="px-2 py-0.5 bg-slate-50 text-slate-400 rounded-full border border-slate-100">
+                  {currentQuestion.type === 'assertion_reason' ? 'Assertion & Reason' : currentQuestion.type === 'match_following' ? 'Match the Following' : 'Standard MCQ'}
+                </span>
+              )}
+            </div>
           </div>
 
           {currentQuestion.imageUrl && (
@@ -350,9 +379,9 @@ export default function TestMode() {
             </div>
           )}
 
-          <h2 className="text-base md:text-2xl font-black text-black mb-6 md:mb-10 leading-tight uppercase tracking-tight">
+          <div className="text-base md:text-2xl font-black text-black mb-6 md:mb-10 leading-tight uppercase tracking-tight whitespace-pre-wrap">
             <LatexRenderer text={currentQuestion.questionText} />
-          </h2>
+          </div>
 
           <div className="space-y-2 md:space-y-3">
             {currentQuestion.options?.map((option, idx) => {
@@ -399,7 +428,7 @@ export default function TestMode() {
               }}
               className="w-full md:w-auto px-10 py-5 bg-black hover:bg-slate-800 text-white rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl flex items-center justify-center gap-3 group"
             >
-              {currentIndex === questions.length - 1 ? 'End Test' : 'Next Question'}
+              {currentIndex === questions.length - 1 ? 'Submit Test' : 'Next Question'}
               <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>

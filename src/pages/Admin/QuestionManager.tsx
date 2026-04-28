@@ -57,63 +57,77 @@ const ManualQuestionForm = memo(({
         )}
       </div>
       <form onSubmit={(e) => onSubmit(e)} className="space-y-6">
-        <div>
-          <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Image URL (Google Drive)</label>
-          <input
-            type="url"
-            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-            placeholder="Link to question image..."
-            value={manualQuestion.imageUrl}
-            onChange={(e) => setManualQuestion(prev => ({ ...prev, imageUrl: e.target.value }))}
-          />
-          {manualQuestion.imageUrl && (
-            <div className="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-lg text-center">
-              <p className="text-[8px] font-black text-slate-300 uppercase mb-2">Preview</p>
-              <img 
-                src={getDriveDirectLink(manualQuestion.imageUrl)} 
-                alt="Preview" 
-                className="max-h-64 mx-auto rounded shadow-lg border border-slate-100"
-                referrerPolicy="no-referrer"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-              />
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Question Type</label>
+            <select
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+              value={manualQuestion.type}
+              onChange={(e) => setManualQuestion(prev => ({ ...prev, type: e.target.value as any }))}
+              required
+            >
+              <option value="mcq">Standard MCQ</option>
+              <option value="assertion_reason">Assertion & Reason</option>
+              <option value="match_following">Match the Following</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Image URL (Google Drive)</label>
+            <input
+              type="url"
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+              placeholder="Link to question image..."
+              value={manualQuestion.imageUrl}
+              onChange={(e) => setManualQuestion(prev => ({ ...prev, imageUrl: e.target.value }))}
+            />
+          </div>
         </div>
+
+        {manualQuestion.imageUrl && (
+          <div className="p-4 bg-slate-50 border border-slate-100 rounded-lg text-center">
+            <p className="text-[8px] font-black text-slate-300 uppercase mb-2">Preview</p>
+            <img 
+              src={getDriveDirectLink(manualQuestion.imageUrl)} 
+              alt="Preview" 
+              className="max-h-64 mx-auto rounded shadow-lg border border-slate-100"
+              referrerPolicy="no-referrer"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+            />
+          </div>
+        )}
 
         <div>
           <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-3">Question (Use $...$ for Math)</label>
           <textarea
             className="w-full p-5 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase min-h-[120px]"
-            placeholder="Type your question..."
+            placeholder={manualQuestion.type === 'assertion_reason' ? "Assertion (A): ...\nReason (R): ..." : "Type your question..."}
             value={manualQuestion.questionText}
             onChange={(e) => setManualQuestion(prev => ({ ...prev, questionText: e.target.value }))}
             required
           />
         </div>
 
-        {manualQuestion.type === 'mcq' && (
-          <div className="space-y-4">
-            <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block">Options</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {manualQuestion.options?.map((opt, i) => (
-                <div key={i} className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px]">{String.fromCharCode(65 + i)}</span>
-                  <input
-                    type="text"
-                    className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
-                    value={opt}
-                    onChange={(e) => {
-                      const newOpts = [...(manualQuestion.options || [])];
-                      newOpts[i] = e.target.value;
-                      setManualQuestion(prev => ({ ...prev, options: newOpts }));
-                    }}
-                    required={manualQuestion.type === 'mcq'}
-                  />
-                </div>
-              ))}
-            </div>
+        <div className="space-y-4">
+          <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block">Options</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {manualQuestion.options?.map((opt, i) => (
+              <div key={i} className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px]">{String.fromCharCode(65 + i)}</span>
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:outline-none focus:border-black transition-all font-black text-[10px] tracking-widest uppercase"
+                  value={opt}
+                  onChange={(e) => {
+                    const newOpts = [...(manualQuestion.options || [])];
+                    newOpts[i] = e.target.value;
+                    setManualQuestion(prev => ({ ...prev, options: newOpts }));
+                  }}
+                  required
+                />
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -364,11 +378,22 @@ export default function QuestionManager() {
       const subName = subjects.find(s => s.id === selectedSubject)?.name || '';
       const chapName = chapters.find(c => c.id === selectedChapter)?.name || 'General';
       
+      // Fetch latest existing questions to ensure no repeats
+      let latestExisting: string[] = existingQuestions.map(q => q.questionText);
+      if (latestExisting.length === 0) {
+        let q = query(collection(db, 'questions'), where('subjectId', '==', selectedSubject));
+        if (selectedChapter) {
+          q = query(q, where('chapterId', '==', selectedChapter));
+        }
+        const snap = await getDocs(q);
+        latestExisting = snap.docs.map(doc => (doc.data() as any).questionText);
+      }
+
       const response = await generateQuestions(
         subName, 
         chapName, 
         5, 
-        existingQuestions.map(q => q.questionText)
+        [...latestExisting, ...questions.map(q => q.questionText || '')]
       );
       const newQuestions = response.map(q => ({
         ...q,
@@ -399,11 +424,22 @@ export default function QuestionManager() {
     
     setGenerating(true);
     try {
+      // Fetch latest existing questions to ensure no repeats
+      let latestExisting: string[] = existingQuestions.map(q => q.questionText);
+      if (latestExisting.length === 0) {
+        let qr = query(collection(db, 'questions'), where('subjectId', '==', (q.subjectId || selectedSubject)));
+        if (q.chapterId || selectedChapter) {
+          qr = query(qr, where('chapterId', '==', (q.chapterId || selectedChapter || 'none')));
+        }
+        const snap = await getDocs(qr);
+        latestExisting = snap.docs.map(doc => (doc.data() as any).questionText);
+      }
+
       const response = await generateQuestions(
         subName, 
         chapName, 
         1, 
-        [...existingQuestions.map(q => q.questionText), ...questions.map(q => q.questionText || '')]
+        [...latestExisting, ...questions.map(q => q.questionText || '')]
       );
       const newQ = response[0];
       const updated = [...questions];
@@ -453,10 +489,10 @@ export default function QuestionManager() {
         <div className="relative z-10">
           <h1 className="text-3xl md:text-5xl font-black mb-4 flex items-center gap-6 uppercase tracking-tighter">
              <BrainCircuit size={40} />
-             Question Manager
+             Questions
           </h1>
           <p className="text-slate-500 font-bold uppercase tracking-widest text-xs max-w-md leading-relaxed">
-            Create or generate questions for your tests. You can add them manually or use AI.
+            Manage your questions here. You can add them one by one or let the AI help you create them.
           </p>
         </div>
         <Sparkles size={160} className="text-white/5 absolute -right-20 -bottom-20 rotate-12" />
@@ -531,7 +567,7 @@ export default function QuestionManager() {
                   ) : (
                     <>
                       <Sparkles size={16} />
-                      AI Generate
+                      Create with AI
                     </>
                   )}
                 </button>
@@ -547,7 +583,7 @@ export default function QuestionManager() {
                   className={`w-full py-5 bg-white border border-slate-200 text-black rounded-lg font-black text-[10px] uppercase tracking-[0.15em] hover:border-black transition-all flex items-center justify-center gap-3 ${showExisting ? 'border-black' : ''}`}
                 >
                   <FileText size={16} />
-                  {showExisting ? 'Hide Library' : 'Question Library'}
+                  {showExisting ? 'Hide List' : 'All Questions'}
                 </button>
               </div>
             </div>
@@ -618,7 +654,7 @@ export default function QuestionManager() {
                           </button>
                         </div>
                       </div>
-                      <div className="font-black text-black uppercase tracking-tight text-sm mb-4 leading-relaxed">
+                      <div className="font-black text-black uppercase tracking-tight text-sm mb-4 leading-relaxed whitespace-pre-wrap">
                         <LatexRenderer text={q.questionText} />
                       </div>
                       {q.imageUrl && (
@@ -706,7 +742,7 @@ export default function QuestionManager() {
                         />
                       </div>
                     )}
-                    <div className="font-black text-black uppercase tracking-tight text-sm mb-6 leading-relaxed">
+                    <div className="font-black text-black uppercase tracking-tight text-sm mb-6 leading-relaxed whitespace-pre-wrap">
                       <LatexRenderer text={q.questionText || ''} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

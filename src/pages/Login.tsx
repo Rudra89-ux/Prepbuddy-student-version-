@@ -63,7 +63,7 @@ export default function Login() {
             P
           </div>
           <h1 className="text-sm font-black text-black uppercase tracking-[0.3em] mb-2">PrepBuddy</h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-loose">Premium Board Preparation<br />Student Edition</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-loose">Your ultimate study assistant<br />Made for students</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

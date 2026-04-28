@@ -51,32 +51,32 @@ export default function Chapters() {
     fetchData();
   }, [subjectId, navigate]);
 
-  if (loading) {
-    return <div className="p-10 text-center animate-pulse">Loading collection...</div>;
-  }
-
-  return (
-    <div className="space-y-8">
-      <Link to="/subjects" className="inline-flex items-center gap-3 text-slate-400 hover:text-black transition-colors font-black text-[10px] uppercase tracking-widest group">
-        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-        Return to Subjects
-      </Link>
-
-      <div className="bg-white p-10 rounded-big border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-black border border-slate-100">
-            <BookOpen size={28} />
+    if (loading) {
+      return <div className="p-10 text-center animate-pulse">Loading chapters...</div>;
+    }
+  
+    return (
+      <div className="space-y-8">
+        <Link to="/subjects" className="inline-flex items-center gap-3 text-slate-400 hover:text-black transition-colors font-black text-[10px] uppercase tracking-widest group">
+          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+          Back to Subjects
+        </Link>
+  
+        <div className="bg-white p-10 rounded-big border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-black border border-slate-100">
+              <BookOpen size={28} />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-none mb-2">{subject?.name || 'Subject'}</h1>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Choose a topic to practice</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-none mb-2">{subject?.name || 'Subject'}</h1>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Curriculum Selection</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-6 pt-6 md:pt-0 border-t md:border-t-0 border-slate-50">
-          <div className="text-right hidden sm:block">
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Scope</p>
-            <p className="text-lg font-black text-black">{chapters.length} Units</p>
-          </div>
+          <div className="flex items-center gap-6 pt-6 md:pt-0 border-t md:border-t-0 border-slate-50">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Total</p>
+              <p className="text-lg font-black text-black">{chapters.length} Chapters</p>
+            </div>
           <div className="w-[1px] h-10 bg-slate-100 mx-4 hidden sm:block" />
           <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center font-black text-xs">
             {chapters.length > 0 ? Math.round((0 / chapters.length) * 100) : 0}%
@@ -100,7 +100,7 @@ export default function Chapters() {
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">
-                  Unit {chapter.order || idx + 1}
+                  Chapter {chapter.order || idx + 1}
                 </p>
                 <h3 className="font-black text-black uppercase tracking-tight text-sm">{chapter.name}</h3>
               </div>
@@ -114,7 +114,7 @@ export default function Chapters() {
         )) : (
           <div className="col-span-full py-24 text-center bg-white rounded-big border border-dashed border-slate-100">
             <BookMarked className="w-20 h-20 mx-auto mb-6 opacity-5" />
-            <p className="font-black text-xs uppercase tracking-[0.2em] text-slate-300">Unit selection unavailable</p>
+            <p className="font-black text-xs uppercase tracking-[0.2em] text-slate-300">No chapters found for this subject</p>
           </div>
         )}
       </div>

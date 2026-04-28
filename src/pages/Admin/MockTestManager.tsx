@@ -200,9 +200,9 @@ export default function MockTestManager() {
     <div className="space-y-8">
       <div className="flex justify-between items-center bg-black p-12 rounded-big text-white overflow-hidden relative shadow-2xl">
         <div className="relative z-10">
-          <h1 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Mock Test Builder</h1>
+          <h1 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Mock Test Editor</h1>
           <p className="text-slate-500 font-bold uppercase tracking-widest text-xs max-w-md leading-relaxed">
-            Create or edit mock tests by picking questions from your database.
+            Create or edit tests by choosing questions from your subjects.
           </p>
         </div>
         <GraduationCap size={96} className="text-white/5 absolute right-12 bottom-0 rotate-12" />
@@ -253,7 +253,7 @@ export default function MockTestManager() {
                   required
                   disabled={!!editingId} // Don't allow subject change on edit for simplicity
                 >
-                  <option value="">Select Domain</option>
+                  <option value="">Select Subject</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>

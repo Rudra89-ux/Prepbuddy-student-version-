@@ -52,20 +52,26 @@ service cloud.firestore {
     function isValidSubject(data) {
       return data.keys().hasAll(['name', 'order']) &&
              data.name is string && data.name.size() <= 100 &&
-             data.order is number;
+             data.order is number &&
+             (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true) &&
+             (data.keys().hasAll(['updatedAt']) ? data.updatedAt == request.time : true);
     }
 
     function isValidChapter(data) {
       return data.keys().hasAll(['subjectId', 'name', 'order']) &&
-             data.subjectId is string && data.name is string && data.order is number;
+             data.subjectId is string && data.name is string && data.order is number &&
+             (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true) &&
+             (data.keys().hasAll(['updatedAt']) ? data.updatedAt == request.time : true);
     }
 
     function isValidQuestion(data) {
       return data.keys().hasAll(['chapterId', 'subjectId', 'type', 'questionText', 'correctAnswer', 'explanation']) &&
              data.questionText is string && data.questionText.size() <= 10000 &&
-             data.type == 'mcq' &&
+             data.type in ['mcq', 'assertion_reason', 'match_following'] &&
              (data.chapterId is string || data.chapterId == 'none') &&
-             (data.keys().hasAll(['options']) ? data.options is list && data.options.size() == 4 : true);
+             (data.keys().hasAll(['options']) ? data.options is list && data.options.size() == 4 : true) &&
+             (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true) &&
+             (data.keys().hasAll(['updatedAt']) ? data.updatedAt == request.time : true);
     }
 
     function isValidTestResult(data) {
@@ -83,7 +89,9 @@ service cloud.firestore {
       return data.keys().hasAll(['title', 'subjectId', 'questionIds', 'duration']) &&
              data.title is string && data.title.size() <= 200 &&
              data.questionIds is list && data.questionIds.size() > 0 &&
-             data.duration is number;
+             data.duration is number &&
+             (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true) &&
+             (data.keys().hasAll(['updatedAt']) ? data.updatedAt == request.time : true);
     }
 
     // Rules for User Profiles
